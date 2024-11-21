@@ -35,25 +35,29 @@ def getMinimumCreationTime(exif_data):
 
 def postprocessImage(images, imageDirectory, fileName):
     imagePath = os.path.join(imageDirectory, fileName)
-    image = open(imagePath, "rb")
-    creationTime = None
-    try:
-        exifTags = exifread.process_file(image, details=False)
-        creationTime = getMinimumCreationTime(exifTags)
-    except:
-        print("invalid exif tags for " + fileName)
-
-    # distinct different time types
-    if creationTime is None:
-        creationTime = localtime(os.path.getctime(imagePath))
-    else:
-        try:
-            creationTime = strptime(str(creationTime), "%Y:%m:%d %H:%M:%S")
-        except:
-            creationTime = localtime(os.path.getctime(imagePath))
-
-    images.append((mktime(creationTime), imagePath))
-    image.close()
+    try: 
+        with open(imagePath, "rb") as image:
+            creationTime = None
+            try:
+                exifTags = exifread.process_file(image, details=False)
+                creationTime = getMinimumCreationTime(exifTags)
+            except:
+                print("invalid exif tags for " + fileName)
+        
+            # distinct different time types
+            if creationTime is None:
+                creationTime = localtime(os.path.getctime(imagePath))
+            else:
+                try:
+                    creationTime = strptime(str(creationTime), "%Y:%m:%d %H:%M:%S")
+                except:
+                    creationTime = localtime(os.path.getctime(imagePath))
+        
+            images.append((mktime(creationTime), imagePath))
+            image.close()
+    except FileNotFoundError: print(f"File not found: {imagePath}") 
+    except IOError: print(f"Error occurred while opening the file: {imagePath}")
+    
 
 
 # Creates the requested path recursively.
