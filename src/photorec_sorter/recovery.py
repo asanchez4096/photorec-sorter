@@ -88,9 +88,14 @@ def sort_photorec_folder(
 
             elif enable_datetime_filename:
                 index = 0
-                image = open(source_file_path, "rb")
-                exifTags = exifread.process_file(image, details=False)
-                image.close()
+                try: 
+                    with open(imagePath, "rb") as image:
+                    # Add your code to process the image here
+                        exifTags = exifread.process_file(image, details=False)
+                        image.close()
+                except FileNotFoundError: print(f"File not found: {imagePath}") 
+                except IOError: print(f"Error occurred while opening the file: {imagePath}")
+                
                 creationTime = jpg_sorter.getMinimumCreationTime(exifTags)
                 try:
                     creationTime = strptime(
